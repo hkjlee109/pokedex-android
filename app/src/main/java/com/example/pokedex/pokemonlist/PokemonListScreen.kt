@@ -1,6 +1,7 @@
 package com.example.pokedex.pokemonlist
 
 
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,10 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
@@ -39,6 +37,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 //import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.pokedex.R
 import com.example.pokedex.data.models.PokedexListEntry
@@ -138,10 +137,24 @@ fun PokemonList(
         }
 
         items(itemCount) {
-            if(it >= itemCount -1 && !endReached) {
+            if(it >= itemCount -1 && !endReached && !isLoading) {
                 viewModel.loadPokemonPaginated()
             }
             PokedexRow(rowIndex = it, entries = pokemonList, navController = navController)
+        }
+    }
+
+    Box(
+        contentAlignment = Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        if(isLoading) {
+            CircularProgressIndicator(color = MaterialTheme.colors.primary)
+        }
+        if(loadError.isNotEmpty()) {
+            RetrySection(error = loadError) {
+                viewModel.loadPokemonPaginated()
+            }
         }
     }
 
@@ -180,33 +193,19 @@ fun PokedexEntry(
             }
     ) {
         Column {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = entry.imageUrl,
                 contentDescription = entry.pokemonName,
+                loading = {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colors.primary,
+                        modifier = Modifier.scale(0.5f)
+                    )
+                },
                 modifier = Modifier
                     .size(120.dp)
-                    .align(CenterHorizontally)
+                    .align(CenterHorizontally),
             )
-//            CoilImage(
-//                request = ImageRequest.Builder(LocalContext.current)
-//                    .data(entry.imageUrl)
-//                    .target {
-//                        viewModel.calcDominantColor(it) { color ->
-//                            dominantColor = Color.White
-//                        }
-//                    }
-//                    .build(),
-//                contentDescription = entry.pokemonName,
-//                fadeIn = true,
-//                modifier = Modifier
-//                    .size(120.dp)
-//                    .align(CenterHorizontally)
-//            ) {
-//                CircularProgressIndicator(
-//                    color = MaterialTheme.colors.primary,
-//                    modifier = Modifier.scale(0.5f)
-//                )
-//            }
             Text(
                 text = entry.pokemonName,
                 fontSize = 20.sp,
@@ -244,3 +243,26 @@ fun PokedexRow(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+@Composable
+fun RetrySection(
+    error: String,
+    onRetry: () -> Unit
+) {
+    Column {
+        Text(error, color = Color.Red, fontSize = 18.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = { onRetry() },
+            modifier = Modifier.align(CenterHorizontally)
+        ) {
+            Text(text = "Retry")
+        }
+    }
+}
+
+
+
+
+
+
