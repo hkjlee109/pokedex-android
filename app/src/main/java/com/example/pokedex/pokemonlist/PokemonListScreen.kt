@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 //import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.pokedex.R
 import com.example.pokedex.data.models.PokedexListEntry
@@ -151,7 +152,7 @@ fun PokedexEntry(
     entry: PokedexListEntry,
     navController: NavController,
     modifier: Modifier = Modifier,
-//    viewModel: PokemonListViewModel = hiltViewModel<PokemonListViewModel>()
+    viewModel: PokemonListViewModel = hiltViewModel<PokemonListViewModel>()
 ) {
     val defaultDominantColor = MaterialTheme.colors.surface
     var dominantColor by remember {
@@ -179,6 +180,13 @@ fun PokedexEntry(
             }
     ) {
         Column {
+            AsyncImage(
+                model = entry.imageUrl,
+                contentDescription = entry.pokemonName,
+                modifier = Modifier
+                    .size(120.dp)
+                    .align(CenterHorizontally)
+            )
 //            CoilImage(
 //                request = ImageRequest.Builder(LocalContext.current)
 //                    .data(entry.imageUrl)
